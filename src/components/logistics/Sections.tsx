@@ -5,6 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StatusBadge, StatCard, SectionHeader } from "@/components/logistics/Shared";
 import {
+  AddContainerDialog, AddLocationDialog, AddTransportDialog,
+  AddRailwayDialog, AddVesselDialog, AddEquipmentDialog, AddUserDialog,
+} from "@/components/logistics/Dialogs";
+import {
   mockContainers, mockLocations, mockTransport, mockVessels,
   mockEquipment, mockUsers, mockActivity, wagons,
   statusConfig, locTypeConfig, ContainerStatus,
@@ -103,6 +107,7 @@ export function Dashboard() {
 export function ContainersSection() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [dialog, setDialog] = useState(false);
 
   const filtered = mockContainers.filter(c => {
     const q = search.toLowerCase();
@@ -112,7 +117,8 @@ export function ContainersSection() {
 
   return (
     <div className="space-y-5 animate-fade-in">
-      <SectionHeader title="Контейнеры" action="Добавить контейнер" />
+      <AddContainerDialog open={dialog} onClose={() => setDialog(false)} />
+      <SectionHeader title="Контейнеры" action="Добавить контейнер" onAction={() => setDialog(true)} />
       <div className="flex gap-3">
         <div className="relative flex-1">
           <Icon name="Search" size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -162,9 +168,11 @@ export function ContainersSection() {
 }
 
 export function LocationsSection() {
+  const [dialog, setDialog] = useState(false);
   return (
     <div className="space-y-5 animate-fade-in">
-      <SectionHeader title="Локации" action="Добавить локацию" />
+      <AddLocationDialog open={dialog} onClose={() => setDialog(false)} />
+      <SectionHeader title="Локации" action="Добавить локацию" onAction={() => setDialog(true)} />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {mockLocations.map(loc => {
           const cfg = locTypeConfig[loc.type];
@@ -200,9 +208,11 @@ export function LocationsSection() {
 }
 
 export function TransportSection() {
+  const [dialog, setDialog] = useState(false);
   return (
     <div className="space-y-5 animate-fade-in">
-      <SectionHeader title="Автотранспорт" action="Добавить транспорт" />
+      <AddTransportDialog open={dialog} onClose={() => setDialog(false)} />
+      <SectionHeader title="Автотранспорт" action="Добавить транспорт" onAction={() => setDialog(true)} />
       <div className="bg-white rounded-lg border border-border overflow-hidden">
         <table className="w-full text-sm">
           <thead>
@@ -234,9 +244,11 @@ export function TransportSection() {
 }
 
 export function RailwaySection() {
+  const [dialog, setDialog] = useState(false);
   return (
     <div className="space-y-5 animate-fade-in">
-      <SectionHeader title="ЖД составы" action="Добавить вагон" />
+      <AddRailwayDialog open={dialog} onClose={() => setDialog(false)} />
+      <SectionHeader title="ЖД составы" action="Добавить вагон" onAction={() => setDialog(true)} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {wagons.map(w => (
           <div key={w.id} className="bg-white rounded-lg border border-border p-5">
@@ -266,9 +278,11 @@ export function RailwaySection() {
 }
 
 export function VesselsSection() {
+  const [dialog, setDialog] = useState(false);
   return (
     <div className="space-y-5 animate-fade-in">
-      <SectionHeader title="Суда" action="Добавить судно" />
+      <AddVesselDialog open={dialog} onClose={() => setDialog(false)} />
+      <SectionHeader title="Суда" action="Добавить судно" onAction={() => setDialog(true)} />
       <div className="space-y-3">
         {mockVessels.map(v => (
           <div key={v.id} className="bg-white rounded-lg border border-border p-5">
@@ -297,9 +311,11 @@ export function VesselsSection() {
 }
 
 export function EquipmentSection() {
+  const [dialog, setDialog] = useState(false);
   return (
     <div className="space-y-5 animate-fade-in">
-      <SectionHeader title="Оборудование" action="Добавить оборудование" />
+      <AddEquipmentDialog open={dialog} onClose={() => setDialog(false)} />
+      <SectionHeader title="Оборудование" action="Добавить оборудование" onAction={() => setDialog(true)} />
       <div className="bg-white rounded-lg border border-border overflow-hidden">
         <table className="w-full text-sm">
           <thead>
@@ -331,6 +347,7 @@ export function EquipmentSection() {
 }
 
 export function UsersSection() {
+  const [dialog, setDialog] = useState(false);
   const roleColors: Record<string, string> = {
     "Администратор": "bg-purple-50 text-purple-700 border-purple-200",
     "Логист":        "bg-sky-50 text-sky-700 border-sky-200",
@@ -339,7 +356,8 @@ export function UsersSection() {
   };
   return (
     <div className="space-y-5 animate-fade-in">
-      <SectionHeader title="Пользователи" action="Добавить пользователя" />
+      <AddUserDialog open={dialog} onClose={() => setDialog(false)} />
+      <SectionHeader title="Пользователи" action="Добавить пользователя" onAction={() => setDialog(true)} />
       <div className="bg-white rounded-lg border border-border overflow-hidden">
         <table className="w-full text-sm">
           <thead>

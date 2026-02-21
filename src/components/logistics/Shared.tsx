@@ -28,12 +28,12 @@ export function StatCard({ label, value, icon, sub, accent }: {
   );
 }
 
-export function SectionHeader({ title, action }: { title: string; action?: string }) {
+export function SectionHeader({ title, action, onAction }: { title: string; action?: string; onAction?: () => void }) {
   return (
     <div className="flex items-center justify-between mb-5">
       <h2 className="text-lg font-semibold text-foreground">{title}</h2>
       {action && (
-        <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-8">
+        <Button size="sm" onClick={onAction} className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs h-8">
           <Icon name="Plus" size={14} className="mr-1" />
           {action}
         </Button>

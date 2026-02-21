@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StatusBadge, StatCard, SectionHeader } from "@/components/logistics/Shared";
+import { DetailTarget } from "@/components/logistics/DetailPanel";
 import {
   AddContainerDialog, AddLocationDialog, AddTransportDialog,
   AddRailwayDialog, AddVesselDialog, AddEquipmentDialog, AddUserDialog,
@@ -14,7 +15,12 @@ import {
   statusConfig, locTypeConfig, ContainerStatus,
 } from "@/data/mockData";
 
-export function Dashboard() {
+interface SectionProps {
+  onSelect: (target: DetailTarget) => void;
+}
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+export function Dashboard({ onSelect }: SectionProps) {
   const statusCounts = mockContainers.reduce((acc, c) => {
     acc[c.status] = (acc[c.status] || 0) + 1;
     return acc;
@@ -26,12 +32,14 @@ export function Dashboard() {
         <h1 className="text-xl font-semibold text-foreground">Дашборд</h1>
         <p className="text-sm text-muted-foreground mt-0.5">Общая сводка · 21 февраля 2026</p>
       </div>
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Контейнеров" value={122} icon="Package" sub="В системе" accent="bg-primary" />
         <StatCard label="На маршрутах" value={38} icon="Navigation" sub="Авто, ЖД, море" accent="bg-accent" />
         <StatCard label="Оборудования" value={24} icon="Zap" sub="Дженсеты и ИП" />
         <StatCard label="Судов в пути" value={2} icon="Ship" sub="Активные рейсы" />
       </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 bg-white rounded-lg border border-border p-5">
           <h3 className="text-sm font-medium text-foreground mb-4">Статусы контейнеров</h3>
@@ -64,12 +72,17 @@ export function Dashboard() {
           </div>
         </div>
       </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg border border-border p-5">
           <h3 className="text-sm font-medium text-foreground mb-3">Локации</h3>
-          <div className="space-y-2">
+          <div className="space-y-1">
             {mockLocations.map(loc => (
-              <div key={loc.id} className="flex items-center justify-between">
+              <div
+                key={loc.id}
+                onClick={() => onSelect({ type: "location", id: loc.id })}
+                className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 cursor-pointer transition-colors"
+              >
                 <span className="text-xs text-foreground">{loc.name}</span>
                 <span className="text-xs text-muted-foreground font-mono-ibm">{loc.containers} конт.</span>
               </div>
@@ -78,9 +91,13 @@ export function Dashboard() {
         </div>
         <div className="bg-white rounded-lg border border-border p-5">
           <h3 className="text-sm font-medium text-foreground mb-3">Суда в пути</h3>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {mockVessels.filter(v => v.status === "В пути").map(v => (
-              <div key={v.id} className="text-xs">
+              <div
+                key={v.id}
+                onClick={() => onSelect({ type: "vessel", id: v.id })}
+                className="text-xs px-2 py-1.5 rounded hover:bg-muted/50 cursor-pointer transition-colors"
+              >
                 <div className="font-medium text-foreground">«{v.name}»</div>
                 <div className="text-muted-foreground">{v.portFrom} → {v.portTo}</div>
                 <div className="text-muted-foreground/50">Прибытие: {v.arrival.split(" ")[0]}</div>
@@ -90,9 +107,13 @@ export function Dashboard() {
         </div>
         <div className="bg-white rounded-lg border border-border p-5">
           <h3 className="text-sm font-medium text-foreground mb-3">Оборудование</h3>
-          <div className="space-y-2">
+          <div className="space-y-1">
             {mockEquipment.map(eq => (
-              <div key={eq.id} className="flex items-center justify-between">
+              <div
+                key={eq.id}
+                onClick={() => onSelect({ type: "equipment", id: eq.id })}
+                className="flex items-center justify-between py-1.5 px-2 rounded hover:bg-muted/50 cursor-pointer transition-colors"
+              >
                 <span className="text-xs font-mono-ibm text-foreground">{eq.identifier}</span>
                 <span className={`text-xs px-1.5 py-0.5 rounded ${eq.status === "Неисправен" ? "bg-red-50 text-red-700" : eq.status === "Техобслуживание" ? "bg-amber-50 text-amber-700" : "bg-green-50 text-green-700"}`}>{eq.status}</span>
               </div>
@@ -104,7 +125,8 @@ export function Dashboard() {
   );
 }
 
-export function ContainersSection() {
+// ─── Containers ───────────────────────────────────────────────────────────────
+export function ContainersSection({ onSelect }: SectionProps) {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [dialog, setDialog] = useState(false);
@@ -125,9 +147,7 @@ export function ContainersSection() {
           <Input placeholder="Номер, клиент, локация..." value={search} onChange={e => setSearch(e.target.value)} className="pl-8 h-9 text-sm" />
         </div>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-44 h-9 text-sm">
-            <SelectValue placeholder="Статус" />
-          </SelectTrigger>
+          <SelectTrigger className="w-44 h-9 text-sm"><SelectValue placeholder="Статус" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Все статусы</SelectItem>
             {Object.entries(statusConfig).map(([k, v]) => <SelectItem key={k} value={k}>{v.label}</SelectItem>)}
@@ -145,7 +165,11 @@ export function ContainersSection() {
           </thead>
           <tbody>
             {filtered.map((c, i) => (
-              <tr key={c.id} className={`border-b border-border last:border-0 hover:bg-muted/20 transition-colors ${i % 2 ? "bg-muted/10" : ""}`}>
+              <tr
+                key={c.id}
+                onClick={() => onSelect({ type: "container", id: c.id })}
+                className={`border-b border-border last:border-0 hover:bg-primary/5 transition-colors cursor-pointer ${i % 2 ? "bg-muted/10" : ""}`}
+              >
                 <td className="px-4 py-3 font-mono-ibm text-xs font-medium text-foreground">{c.number}</td>
                 <td className="px-4 py-3 text-xs text-muted-foreground">{c.type} · {c.volume}м³</td>
                 <td className="px-4 py-3"><StatusBadge status={c.status} /></td>
@@ -154,7 +178,7 @@ export function ContainersSection() {
                 <td className="px-4 py-3 text-xs text-muted-foreground max-w-[140px] truncate">{c.location}</td>
                 <td className="px-4 py-3 text-xs text-muted-foreground">{c.lastCheck}</td>
                 <td className="px-4 py-3">
-                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Icon name="MoreHorizontal" size={14} /></Button>
+                  <Icon name="ChevronRight" size={14} className="text-muted-foreground/40" />
                 </td>
               </tr>
             ))}
@@ -167,7 +191,8 @@ export function ContainersSection() {
   );
 }
 
-export function LocationsSection() {
+// ─── Locations ────────────────────────────────────────────────────────────────
+export function LocationsSection({ onSelect }: SectionProps) {
   const [dialog, setDialog] = useState(false);
   return (
     <div className="space-y-5 animate-fade-in">
@@ -177,7 +202,11 @@ export function LocationsSection() {
         {mockLocations.map(loc => {
           const cfg = locTypeConfig[loc.type];
           return (
-            <div key={loc.id} className="bg-white rounded-lg border border-border p-5 hover:border-primary/40 transition-colors cursor-pointer">
+            <div
+              key={loc.id}
+              onClick={() => onSelect({ type: "location", id: loc.id })}
+              className="bg-white rounded-lg border border-border p-5 hover:border-primary/40 hover:shadow-sm transition-all cursor-pointer"
+            >
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -187,7 +216,7 @@ export function LocationsSection() {
                   <div className="font-medium text-foreground text-sm">{loc.name}</div>
                   <div className="text-xs text-muted-foreground">{loc.city}</div>
                 </div>
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Icon name="MoreHorizontal" size={14} /></Button>
+                <Icon name="ChevronRight" size={15} className="text-muted-foreground/40 mt-1" />
               </div>
               <div className="flex gap-6 pt-3 border-t border-border">
                 <div>
@@ -207,7 +236,8 @@ export function LocationsSection() {
   );
 }
 
-export function TransportSection() {
+// ─── Transport ────────────────────────────────────────────────────────────────
+export function TransportSection({ onSelect }: SectionProps) {
   const [dialog, setDialog] = useState(false);
   return (
     <div className="space-y-5 animate-fade-in">
@@ -224,7 +254,11 @@ export function TransportSection() {
           </thead>
           <tbody>
             {mockTransport.map((t, i) => (
-              <tr key={t.id} className={`border-b border-border last:border-0 hover:bg-muted/20 ${i % 2 ? "bg-muted/10" : ""}`}>
+              <tr
+                key={t.id}
+                onClick={() => onSelect({ type: "transport", id: t.id })}
+                className={`border-b border-border last:border-0 hover:bg-primary/5 transition-colors cursor-pointer ${i % 2 ? "bg-muted/10" : ""}`}
+              >
                 <td className="px-4 py-3 font-mono-ibm text-xs font-medium text-foreground">{t.plate}</td>
                 <td className="px-4 py-3 text-xs text-muted-foreground">{t.type}</td>
                 <td className="px-4 py-3 text-xs text-foreground">{t.driver}</td>
@@ -233,7 +267,7 @@ export function TransportSection() {
                 </td>
                 <td className="px-4 py-3 text-xs text-muted-foreground">{t.route}</td>
                 <td className="px-4 py-3 text-xs font-mono-ibm text-muted-foreground">{t.containers.length > 0 ? t.containers.join(", ") : "—"}</td>
-                <td className="px-4 py-3"><Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Icon name="MoreHorizontal" size={14} /></Button></td>
+                <td className="px-4 py-3"><Icon name="ChevronRight" size={14} className="text-muted-foreground/40" /></td>
               </tr>
             ))}
           </tbody>
@@ -243,7 +277,8 @@ export function TransportSection() {
   );
 }
 
-export function RailwaySection() {
+// ─── Railway ──────────────────────────────────────────────────────────────────
+export function RailwaySection({ onSelect }: SectionProps) {
   const [dialog, setDialog] = useState(false);
   return (
     <div className="space-y-5 animate-fade-in">
@@ -251,25 +286,30 @@ export function RailwaySection() {
       <SectionHeader title="ЖД составы" action="Добавить вагон" onAction={() => setDialog(true)} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {wagons.map(w => (
-          <div key={w.id} className="bg-white rounded-lg border border-border p-5">
+          <div
+            key={w.id}
+            onClick={() => onSelect({ type: "wagon", id: w.id })}
+            className="bg-white rounded-lg border border-border p-5 hover:border-primary/40 hover:shadow-sm transition-all cursor-pointer"
+          >
             <div className="flex justify-between items-start mb-3">
               <div>
                 <div className="font-mono-ibm text-sm font-medium text-foreground">Вагон № {w.number}</div>
                 <div className="text-xs text-muted-foreground">{w.type}</div>
               </div>
-              <span className={`text-xs px-2 py-0.5 rounded border ${w.containers.length > 0 ? "bg-sky-50 text-sky-700 border-sky-200" : "bg-gray-50 text-gray-600 border-gray-200"}`}>
-                {w.containers.length}/{w.capacity} конт.
-              </span>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs px-2 py-0.5 rounded border ${w.containers.length > 0 ? "bg-sky-50 text-sky-700 border-sky-200" : "bg-gray-50 text-gray-600 border-gray-200"}`}>
+                  {w.containers.length}/{w.capacity} конт.
+                </span>
+                <Icon name="ChevronRight" size={14} className="text-muted-foreground/40" />
+              </div>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
-              <Icon name="ArrowRight" size={12} />
-              <span>{w.route}</span>
+              <Icon name="ArrowRight" size={12} /><span>{w.route}</span>
             </div>
             <div className="flex gap-6 text-xs pt-3 border-t border-border">
               <div><span className="text-foreground font-medium">Отпр: </span>{w.departure}</div>
               <div><span className="text-foreground font-medium">Приб: </span>{w.arrival}</div>
             </div>
-            {w.containers.length > 0 && <div className="mt-2 text-xs font-mono-ibm text-primary">{w.containers.join(", ")}</div>}
           </div>
         ))}
       </div>
@@ -277,7 +317,8 @@ export function RailwaySection() {
   );
 }
 
-export function VesselsSection() {
+// ─── Vessels ──────────────────────────────────────────────────────────────────
+export function VesselsSection({ onSelect }: SectionProps) {
   const [dialog, setDialog] = useState(false);
   return (
     <div className="space-y-5 animate-fade-in">
@@ -285,7 +326,11 @@ export function VesselsSection() {
       <SectionHeader title="Суда" action="Добавить судно" onAction={() => setDialog(true)} />
       <div className="space-y-3">
         {mockVessels.map(v => (
-          <div key={v.id} className="bg-white rounded-lg border border-border p-5">
+          <div
+            key={v.id}
+            onClick={() => onSelect({ type: "vessel", id: v.id })}
+            className="bg-white rounded-lg border border-border p-5 hover:border-primary/40 hover:shadow-sm transition-all cursor-pointer"
+          >
             <div className="flex items-start justify-between mb-3">
               <div>
                 <div className="font-medium text-foreground">«{v.name}»</div>
@@ -295,7 +340,7 @@ export function VesselsSection() {
               </div>
               <div className="flex items-center gap-2">
                 <span className={`text-xs px-2 py-0.5 rounded border ${v.status === "В пути" ? "bg-sky-50 text-sky-700 border-sky-200" : "bg-gray-50 text-gray-600 border-gray-200"}`}>{v.status}</span>
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Icon name="MoreHorizontal" size={14} /></Button>
+                <Icon name="ChevronRight" size={14} className="text-muted-foreground/40" />
               </div>
             </div>
             <div className="grid grid-cols-3 gap-4 pt-3 border-t border-border">
@@ -310,7 +355,8 @@ export function VesselsSection() {
   );
 }
 
-export function EquipmentSection() {
+// ─── Equipment ────────────────────────────────────────────────────────────────
+export function EquipmentSection({ onSelect }: SectionProps) {
   const [dialog, setDialog] = useState(false);
   return (
     <div className="space-y-5 animate-fade-in">
@@ -327,7 +373,11 @@ export function EquipmentSection() {
           </thead>
           <tbody>
             {mockEquipment.map((eq, i) => (
-              <tr key={eq.id} className={`border-b border-border last:border-0 hover:bg-muted/20 ${i % 2 ? "bg-muted/10" : ""}`}>
+              <tr
+                key={eq.id}
+                onClick={() => onSelect({ type: "equipment", id: eq.id })}
+                className={`border-b border-border last:border-0 hover:bg-primary/5 transition-colors cursor-pointer ${i % 2 ? "bg-muted/10" : ""}`}
+              >
                 <td className="px-4 py-3 font-mono-ibm text-xs font-medium text-foreground">{eq.identifier}</td>
                 <td className="px-4 py-3 text-xs text-muted-foreground">{eq.type}</td>
                 <td className="px-4 py-3">
@@ -336,7 +386,7 @@ export function EquipmentSection() {
                 <td className="px-4 py-3 text-xs text-muted-foreground">{eq.location}</td>
                 <td className="px-4 py-3 text-xs font-mono-ibm text-foreground">{eq.nextCheck}</td>
                 <td className="px-4 py-3 text-xs font-mono-ibm text-muted-foreground">{eq.serviceLife}</td>
-                <td className="px-4 py-3"><Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Icon name="MoreHorizontal" size={14} /></Button></td>
+                <td className="px-4 py-3"><Icon name="ChevronRight" size={14} className="text-muted-foreground/40" /></td>
               </tr>
             ))}
           </tbody>
@@ -346,7 +396,8 @@ export function EquipmentSection() {
   );
 }
 
-export function UsersSection() {
+// ─── Users ────────────────────────────────────────────────────────────────────
+export function UsersSection({ onSelect: _ }: SectionProps) {
   const [dialog, setDialog] = useState(false);
   const roleColors: Record<string, string> = {
     "Администратор": "bg-purple-50 text-purple-700 border-purple-200",
@@ -375,7 +426,9 @@ export function UsersSection() {
                 <td className="px-4 py-3 text-xs text-muted-foreground">{u.department}</td>
                 <td className="px-4 py-3 font-mono-ibm text-xs text-muted-foreground">{u.login}</td>
                 <td className="px-4 py-3"><span className="text-xs px-2 py-0.5 rounded border bg-green-50 text-green-700 border-green-200">{u.status}</span></td>
-                <td className="px-4 py-3"><Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Icon name="MoreHorizontal" size={14} /></Button></td>
+                <td className="px-4 py-3">
+                  <Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Icon name="MoreHorizontal" size={14} /></Button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -385,7 +438,8 @@ export function UsersSection() {
   );
 }
 
-export function ActivitySection() {
+// ─── Activity ─────────────────────────────────────────────────────────────────
+export function ActivitySection({ onSelect }: SectionProps) {
   return (
     <div className="space-y-5 animate-fade-in">
       <SectionHeader title="Журнал действий" />
@@ -393,18 +447,34 @@ export function ActivitySection() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/30">
-              {["Время", "Пользователь", "Действие", "Объект"].map(h => (
+              {["Время", "Пользователь", "Действие", "Объект", ""].map(h => (
                 <th key={h} className="text-left px-4 py-2.5 text-xs font-medium text-muted-foreground">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {mockActivity.map((a, i) => (
-              <tr key={a.id} className={`border-b border-border last:border-0 hover:bg-muted/20 ${i % 2 ? "bg-muted/10" : ""}`}>
+              <tr
+                key={a.id}
+                onClick={() => {
+                  if (a.entityType && a.entityId) {
+                    const typeMap: Record<string, DetailTarget["type"]> = {
+                      container: "container", equipment: "equipment",
+                      vessel: "vessel", user: "container",
+                    };
+                    const t = typeMap[a.entityType];
+                    if (t) onSelect({ type: t, id: a.entityId });
+                  }
+                }}
+                className={`border-b border-border last:border-0 hover:bg-primary/5 transition-colors ${a.entityType ? "cursor-pointer" : ""} ${i % 2 ? "bg-muted/10" : ""}`}
+              >
                 <td className="px-4 py-3 font-mono-ibm text-xs text-muted-foreground whitespace-nowrap">{a.time}</td>
                 <td className="px-4 py-3 text-xs font-medium text-foreground">{a.user}</td>
                 <td className="px-4 py-3 text-xs text-primary">{a.action}</td>
                 <td className="px-4 py-3 text-xs text-muted-foreground">{a.object}</td>
+                <td className="px-4 py-3">
+                  {a.entityType && <Icon name="ChevronRight" size={14} className="text-muted-foreground/40" />}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -414,7 +484,8 @@ export function ActivitySection() {
   );
 }
 
-export function MapSection() {
+// ─── Map ──────────────────────────────────────────────────────────────────────
+export function MapSection({ onSelect }: SectionProps) {
   return (
     <div className="space-y-5 animate-fade-in">
       <SectionHeader title="Карта объектов" />
@@ -434,9 +505,14 @@ export function MapSection() {
             const y = ((62 - loc.coords[0]) / (62 - 43)) * 80 + 8;
             const cfg = locTypeConfig[loc.type];
             return (
-              <div key={loc.id} className="absolute group cursor-pointer" style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}>
+              <div
+                key={loc.id}
+                className="absolute group cursor-pointer"
+                style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%, -50%)" }}
+                onClick={() => onSelect({ type: "location", id: loc.id })}
+              >
                 <div className="relative">
-                  <div className="w-6 h-6 rounded-full bg-primary border-2 border-white shadow-lg flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-full bg-primary border-2 border-white shadow-lg flex items-center justify-center hover:scale-125 transition-transform">
                     <Icon name={cfg.icon as "Anchor"} size={11} className="text-white" />
                   </div>
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 opacity-0 group-hover:opacity-100 transition-all duration-150 bg-foreground text-background text-xs rounded-md px-3 py-2 whitespace-nowrap shadow-xl z-20 pointer-events-none">
@@ -450,7 +526,7 @@ export function MapSection() {
           })}
 
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-center opacity-30">
+            <div className="text-center opacity-20">
               <Icon name="Map" size={48} className="mx-auto mb-2 text-slate-400" />
             </div>
           </div>
@@ -461,7 +537,11 @@ export function MapSection() {
             {mockLocations.map(loc => {
               const cfg = locTypeConfig[loc.type];
               return (
-                <div key={loc.id} className="flex items-center gap-1.5 text-xs bg-white border border-border rounded-md px-2.5 py-1.5 hover:border-primary/40 transition-colors cursor-pointer">
+                <div
+                  key={loc.id}
+                  onClick={() => onSelect({ type: "location", id: loc.id })}
+                  className="flex items-center gap-1.5 text-xs bg-white border border-border rounded-md px-2.5 py-1.5 hover:border-primary/40 hover:bg-primary/5 transition-colors cursor-pointer"
+                >
                   <Icon name={cfg.icon as "Anchor"} size={11} className="text-primary" />
                   <span className="font-medium text-foreground">{loc.name}</span>
                   <span className="text-muted-foreground ml-1">{loc.containers}+{loc.equipment}</span>

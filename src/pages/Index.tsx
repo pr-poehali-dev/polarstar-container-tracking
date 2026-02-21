@@ -7,29 +7,40 @@ import {
   RailwaySection, VesselsSection, EquipmentSection,
   UsersSection, ActivitySection, MapSection,
 } from "@/components/logistics/Sections";
+import DetailPanel, { DetailTarget } from "@/components/logistics/DetailPanel";
 
 export default function Index() {
   const [activeSection, setActiveSection] = useState<Section>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [detail, setDetail] = useState<DetailTarget | null>(null);
+
+  const handleSelect = (target: DetailTarget) => setDetail(target);
+  const handleNavigate = (target: DetailTarget) => setDetail(target);
+  const handleClose = () => setDetail(null);
+
+  const sectionProps = { onSelect: handleSelect };
 
   const renderSection = () => {
     switch (activeSection) {
-      case "dashboard":  return <Dashboard />;
-      case "containers": return <ContainersSection />;
-      case "locations":  return <LocationsSection />;
-      case "transport":  return <TransportSection />;
-      case "railway":    return <RailwaySection />;
-      case "vessels":    return <VesselsSection />;
-      case "equipment":  return <EquipmentSection />;
-      case "map":        return <MapSection />;
-      case "users":      return <UsersSection />;
-      case "activity":   return <ActivitySection />;
-      default:           return <Dashboard />;
+      case "dashboard":  return <Dashboard {...sectionProps} />;
+      case "containers": return <ContainersSection {...sectionProps} />;
+      case "locations":  return <LocationsSection {...sectionProps} />;
+      case "transport":  return <TransportSection {...sectionProps} />;
+      case "railway":    return <RailwaySection {...sectionProps} />;
+      case "vessels":    return <VesselsSection {...sectionProps} />;
+      case "equipment":  return <EquipmentSection {...sectionProps} />;
+      case "map":        return <MapSection {...sectionProps} />;
+      case "users":      return <UsersSection {...sectionProps} />;
+      case "activity":   return <ActivitySection {...sectionProps} />;
+      default:           return <Dashboard {...sectionProps} />;
     }
   };
 
   return (
     <div className="flex h-screen bg-background overflow-hidden font-ibm">
+      {/* Detail Panel */}
+      <DetailPanel target={detail} onClose={handleClose} onNavigate={handleNavigate} />
+
       {/* Sidebar */}
       <aside
         className={`${sidebarOpen ? "w-56" : "w-14"} transition-all duration-200 flex-shrink-0 flex flex-col`}
@@ -51,7 +62,7 @@ export default function Index() {
           {navItems.map(item => (
             <button
               key={item.id}
-              onClick={() => setActiveSection(item.id)}
+              onClick={() => { setActiveSection(item.id); setDetail(null); }}
               className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-left transition-all relative
                 ${activeSection === item.id ? "text-white" : "hover:text-white/80"}`}
               style={{
